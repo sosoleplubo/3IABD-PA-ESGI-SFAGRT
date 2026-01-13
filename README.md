@@ -33,7 +33,7 @@ La variable cible est le **box-office worldwide (log-transformé)**.
 ---
 
 ## Modèles implémentés
-Tous les modèles sont **implémentés manuellement en C++**, puis utilisés
+Tous les modèles sont **implémentés manuellement en RUST**, puis utilisés
 via des bindings Python.
 
 - Modèle linéaire
