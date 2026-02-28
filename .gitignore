@@ -2,3 +2,5 @@ Rust/target/
 */.rs.bk
 Rust/.idea
 .idea
+Python/.idea
+Python/.venv
