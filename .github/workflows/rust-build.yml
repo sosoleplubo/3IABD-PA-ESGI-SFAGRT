@@ -1,0 +1,63 @@
+name: Build All Platforms and Commit
+
+on:
+  push:
+    paths:
+      - "Rust/**"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Release
+        run: cargo build --release
+        working-directory: Rust
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-${{ matrix.os }}
+          path: |
+            Rust/target/release/*.dll
+            Rust/target/release/*.so
+            Rust/target/release/*.dylib
+
+  commit:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Move libs to build folder
+        run: |
+          mkdir -p build
+          find artifacts -type f -name "*.dll" -exec cp {} build/rust_framework.dll \;
+          find artifacts -type f -name "*.dylib" -exec cp {} build/librust_framework.dylib \;
+          find artifacts -type f -name "*.so" -exec cp {} build/librust_framework.so \;
+
+      - name: Commit updated libs
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add build/*
+          git commit -m "Update Rust binaries [skip ci]" || echo "No changes"
+          git push
