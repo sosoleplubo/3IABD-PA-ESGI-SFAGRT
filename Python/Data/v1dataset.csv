@@ -1,2 +1,11 @@
-Genre,Studio,Date,Budget,BudgetCom,Durée,Réalisateur,Noms,Acteurs,BoxOffice,Pays
-,,,,,,,,,,
+Noms,Studio,Genre,Date,Budget,Durée,Réalisateur,Acteurs,BoxOffice,Pays
+Closer,"Columbia Pictures, Inside Track","Drama, Romance",2004-12-03,27000000,104,Mike Nichols,"Jude Law, Natalie Portman, Julia Roberts",115505027,"United Kingdom, United States of America"
+The Ugly Stepsister,"Mer Film, Lava Films, MOTOR, Scanbox Production, Zentropa International Sweden, Mediefondet Zefyr, Film i Väst","Horror, Comedy, Drama",2025-03-07,4250000,109,Emilie Blichfeldt,"Lea Myren, Ane Dahl Torp, Thea Sofie Loch Næss",5325096,"Denmark, Norway, Poland, Sweden"
+Troy,"Warner Bros. Pictures, Plan B Entertainment, Radiant Productions, Helena Productions","War, Action, History",2004-05-13,175000000,163,Wolfgang Petersen,"Brad Pitt, Orlando Bloom, Eric Bana",497409852,"United Kingdom, United States of America"
+IF,"Paramount Pictures, Sunday Night Productions, Maximum Effort","Comedy, Fantasy, Family",2024-05-08,110000000,104,John Krasinski,"Cailey Fleming, Ryan Reynolds, John Krasinski",190309707,United States of America
+Eenie Meanie,"20th Century Studios, Reese Wernick Productions","Thriller, Action, Comedy",2025-08-21,50000000,106,Shawn Simmons,"Samara Weaving, Karl Glusman, Andy Garcia",0,United States of America
+Ocean's Twelve,"Warner Bros. Pictures, Jerry Weintraub Productions, Section Eight, Village Roadshow Pictures","Thriller, Crime",2004-12-09,110000000,125,Steven Soderbergh,"George Clooney, Julia Roberts, Brad Pitt",362744280,United States of America
+Raiders of the Lost Ark,"Paramount Pictures, Lucasfilm Ltd.","Adventure, Action",1981-06-12,18000000,115,Steven Spielberg,"Harrison Ford, Karen Allen, Paul Freeman",389925971,United States of America
+John Wick: Chapter 2,"Thunder Road, 87Eleven, Summit Entertainment","Action, Thriller, Crime",2017-02-08,40000000,122,Chad Stahelski,"Keanu Reeves, Common, Laurence Fishburne",171539887,United States of America
+The Mask,"Dark Horse Entertainment, New Line Cinema","Romance, Comedy, Crime, Fantasy",1994-07-29,23000000,101,Chuck Russell,"Jim Carrey, Peter Riegert, Peter Greene",351583407,United States of America
+Dream Story,"Gretchenfilm, Thomas Kretschmar Film, Cinemotion, Studio Babelsberg",Drama,2025-01-16,0,109,Florian Frerichs,"Nikolai Kinski, Laurine Price, Nicole Nagel",0,Germany
