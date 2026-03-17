@@ -4,3 +4,4 @@ Rust/.idea
 .idea
 Python/.idea
 Python/.venv
+.env
