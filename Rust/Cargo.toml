@@ -1,6 +1,12 @@
 [package]
-name = "Rust"
+name = "PAESGISFAGRT"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "PAESGISFAGRT"
+crate-type = ["cdylib"]
+
 [dependencies]
+pyo3 = { version = "0.21", features = ["extension-module"] }
+rand = "0.8"
