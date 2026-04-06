@@ -27,3 +27,18 @@ res_recuit = PAESGISFAGRT.recuitsimule(
 )
 
 print("Résultat recuit :", res_recuit)
+
+dataset = [
+    ([0.0, 0.0], 0.0),
+    ([0.0, 1.0], 1.0),
+    ([1.0, 0.0], 1.0),
+    ([1.0, 1.0], 0.0),
+]
+
+w1, b1, w2, b2, preds = PAESGISFAGRT.pmc(dataset, 100000, 0.1)
+
+print("w1 =", w1)
+print("b1 =", b1)
+print("w2 =", w2)
+print("b2 =", b2)
+print("predictions =", preds)
