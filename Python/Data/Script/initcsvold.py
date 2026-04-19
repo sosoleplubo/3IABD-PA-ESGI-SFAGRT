@@ -8,7 +8,7 @@ API_KEY = os.getenv("TMDB_API_KEY")
 
 movies = []
 
-TOTAL_PAGES = 500
+TOTAL_PAGES = 50
 
 for page in range(1, TOTAL_PAGES + 1):
 
@@ -41,7 +41,7 @@ for page in range(1, TOTAL_PAGES + 1):
         revenue = details.get("revenue", 0)
         runtime = details.get("runtime", 0)
 
-
+        
         if not budget or not revenue or not runtime:
             continue
 
