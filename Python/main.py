@@ -1,44 +1,79 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 import PAESGISFAGRT
 
-print(PAESGISFAGRT.__file__)
-print(dir(PAESGISFAGRT))
-def oracle(x):
-    return (x + 8)**2 * (x + 1)**2 * (x - 6)**2 + 5*x
+# Chargement
+df = pd.read_csv("Data/v1dataset.csv")
+
+# Encoder les colonnes texte
+le = LabelEncoder()
+for col in ["Studio", "Genre", "Réalisateur", "Noms", "Acteurs", "Pays"]:
+    df[col] = le.fit_transform(df[col].astype(str))
 
 
-res_gen = PAESGISFAGRT.genetique(
-    oracle,
-    100,   # taille_population
-    20,    # nb_elites
-    500,   # nb_generation
-    -100,  # domaine_min
-    100    # domaine_max
+
+# Encoder la date en année
+df["Date"] = pd.to_datetime(df["Date"], errors="coerce").dt.year.fillna(0).astype(int)
+
+# Séparer X et Y
+X = df.drop(columns=["BoxOffice"]).values.astype(float)
+df["BoxOffice"] = df["BoxOffice"].astype(str).str.replace(r'[^0-9.]', '', regex=True)
+df["BoxOffice"] = pd.to_numeric(df["BoxOffice"], errors="coerce").fillna(0)
+Y = df["BoxOffice"].values.astype(float)
+
+# Normaliser
+scaler_x = StandardScaler()
+scaler_y = StandardScaler()
+
+X = scaler_x.fit_transform(X)
+Y = scaler_y.fit_transform(Y.reshape(-1, 1)).flatten()
+
+# Dataset
+dataset = list(zip(X.tolist(), [[y] for y in Y.tolist()]))
+
+# Modèle
+nb_features = X.shape[1]
+model = PAESGISFAGRT.ModelePMC(
+    couches=[nb_features, 16, 16, 1],
+    txapprentissage=0.01,
+    activation="tanh",
+    probleme="regression",
 )
 
-print("Résultat génétique :", res_gen)
+# Entraînement avec suivi du loss
+losses = []
+epochs = 100
+steps = 100  # on entraîne par blocs pour tracer la courbe
 
+for i in range(steps):
+    model.entrainer(dataset, nbgeneration=epochs)
 
+    preds = [model.predire(x)[0] for x, _ in dataset]
+    vrais = [y[0] for _, y in dataset]
+    loss = np.mean([(p - v) ** 2 for p, v in zip(preds, vrais)])
+    losses.append(loss)
 
-res_recuit = PAESGISFAGRT.recuitsimule(
-    oracle,
-    0.0001,
-    1.0,
-    0.99
-)
+    if i % 10 == 0:
+        print(f"Étape {i*epochs}/{steps*epochs} — Loss: {loss:.4f}")
 
-print("Résultat recuit :", res_recuit)
+# Courbe de loss
+plt.plot(losses)
+plt.title("Loss MSE")
+plt.xlabel(f"Blocs de {epochs} générations")
+plt.ylabel("MSE")
+plt.show()
+plt.clf()
 
-dataset = [
-    ([0.0, 0.0], 0.0),
-    ([0.0, 1.0], 1.0),
-    ([1.0, 0.0], 1.0),
-    ([1.0, 1.0], 0.0),
-]
+# Prédictions vs réalité
+preds_denorm = scaler_y.inverse_transform([[p] for p in preds])
+vrais_denorm = scaler_y.inverse_transform([[v] for v in vrais])
 
-w1, b1, w2, b2, preds = PAESGISFAGRT.pmc(dataset, 100000, 0.1)
-
-print("w1 =", w1)
-print("b1 =", b1)
-print("w2 =", w2)
-print("b2 =", b2)
-print("predictions =", preds)
+plt.scatter(vrais_denorm, preds_denorm, alpha=0.5)
+plt.plot([min(vrais_denorm), max(vrais_denorm)],
+         [min(vrais_denorm), max(vrais_denorm)], color='red', linestyle='--')
+plt.title("Prédictions vs Réalité")
+plt.xlabel("BoxOffice réel")
+plt.ylabel("BoxOffice prédit")
+plt.show()

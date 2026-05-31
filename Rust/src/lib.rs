@@ -1,5 +1,7 @@
 mod utils;
 mod pmc;
+mod genetique;
+mod recuitsimule;
 
 use pyo3::prelude::*;
 use pmc::{PMC, Activation, TypeProbleme};
@@ -48,6 +50,8 @@ impl ModelePMC {
     fn predire(&self, x: Vec<f64>) -> Vec<f64> {
         self.modele.predire(&x)
     }
+
+
 }
 
 #[pymodule]
