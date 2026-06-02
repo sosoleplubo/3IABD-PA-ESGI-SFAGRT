@@ -1,5 +1,6 @@
 use crate::utils::{random_matrice, random_tableau};
 
+
 #[derive(Clone)]
 pub enum Activation {
     Sigmoide,
@@ -60,6 +61,34 @@ impl PMC {
         }
     }
 
+    pub fn sauvegarder(&self, chemin: &str) -> std::io::Result<()> {
+        let activation = match self.activation {
+            Activation::Sigmoide => "sigmoide",
+            Activation::Tanh => "tanh",
+        };
+
+        let probleme = match self.probleme {
+            TypeProbleme::Classification => "classification",
+            TypeProbleme::Regression => "regression",
+        };
+
+        let contenu = format!(
+            r#"{{
+"txapprentissage": {},
+"activation": "{}",
+"probleme": "{}",
+"poids": {:?},
+"biais": {:?}
+}}"#,
+            self.txapprentissage,
+            activation,
+            probleme,
+            self.poids,
+            self.biais
+        );
+
+        std::fs::write(chemin, contenu)
+    }
     pub fn forward(&self, entree: &Vec<f64>) -> (Vec<Vec<f64>>, Vec<Vec<f64>>) {
         let mut activations = vec![entree.clone()];
         let mut zs = Vec::new();
@@ -178,4 +207,5 @@ impl PMC {
             TypeProbleme::Regression => sortie.clone(),
         }
     }
+
 }

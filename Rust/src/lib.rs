@@ -2,6 +2,7 @@ mod utils;
 mod pmc;
 mod genetique;
 mod recuitsimule;
+mod regresslin;
 
 use pyo3::prelude::*;
 use pmc::{PMC, Activation, TypeProbleme};
@@ -51,6 +52,15 @@ impl ModelePMC {
         self.modele.predire(&x)
     }
 
+    fn sauvegarder(&self, chemin: String) -> PyResult<()> {
+
+        self.modele
+
+            .sauvegarder(&chemin)
+
+            .map_err(|e| pyo3::exceptions::PyIOError::new_err(e.to_string()))
+
+    }
 
 }
 

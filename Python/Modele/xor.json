@@ -1,0 +1,7 @@
+{
+"txapprentissage": 0.01,
+"activation": "tanh",
+"probleme": "classification",
+"poids": [[[-0.3115164139423195, -3.129486402099295]]],
+"biais": [[6.405939806742294]]
+}
