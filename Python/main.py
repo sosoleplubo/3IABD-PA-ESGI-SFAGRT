@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 import PAESGISFAGRT
 
-df = pd.read_csv("Data/v1dataset.csv")
+df = pd.read_csv("Data/old/v1dataset.csv")
 
 le = LabelEncoder()
 for col in ["Studio", "Genre", "Réalisateur", "Noms", "Acteurs", "Pays"]:

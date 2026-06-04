@@ -26,3 +26,8 @@ pub fn tanh_derivative(x: f64) -> f64 {
 pub fn oracle(x: f64, y: f64) -> f64 {
     (x as i64 ^ y as i64) as f64
 }
+
+pub enum TypeProbleme {
+    Classification,
+    Regression,
+}

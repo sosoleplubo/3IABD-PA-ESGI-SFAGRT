@@ -1,16 +1,11 @@
 use crate::utils::{random_matrice, random_tableau};
-
+use crate::utils::TypeProbleme;
+use crate::tbwriter::TBLogger;
 
 #[derive(Clone)]
 pub enum Activation {
     Sigmoide,
     Tanh,
-}
-
-#[derive(Clone)]
-pub enum TypeProbleme {
-    Classification,
-    Regression,
 }
 
 pub struct PMC {
@@ -19,6 +14,8 @@ pub struct PMC {
     pub txapprentissage: f64,
     pub activation: Activation,
     pub probleme: TypeProbleme,
+    pub train_logger: Option<TBLogger>,
+    pub test_logger: Option<TBLogger>,
 }
 
 impl PMC {
@@ -27,6 +24,8 @@ impl PMC {
         txapprentissage: f64,
         activation: Activation,
         probleme: TypeProbleme,
+        train_logger: Option<TBLogger>,
+        test_logger: Option<TBLogger>,
     ) -> Self {
         let mut poids = Vec::new();
         let mut biais = Vec::new();
@@ -38,7 +37,7 @@ impl PMC {
             biais.push(tableau);
         }
 
-        Self { poids, biais, txapprentissage, activation, probleme }
+        Self { poids, biais, txapprentissage, activation, probleme, train_logger, test_logger }
     }
 
     pub fn activer(&self, x: f64) -> f64 {
@@ -80,15 +79,12 @@ impl PMC {
 "poids": {:?},
 "biais": {:?}
 }}"#,
-            self.txapprentissage,
-            activation,
-            probleme,
-            self.poids,
-            self.biais
+            self.txapprentissage, activation, probleme, self.poids, self.biais
         );
 
         std::fs::write(chemin, contenu)
     }
+
     pub fn forward(&self, entree: &Vec<f64>) -> (Vec<Vec<f64>>, Vec<Vec<f64>>) {
         let mut activations = vec![entree.clone()];
         let mut zs = Vec::new();
@@ -99,13 +95,9 @@ impl PMC {
             let activation_precedente = activations.last().unwrap();
             let mut z_couche = Vec::new();
 
-            for (neurone_poids, biais_neurone) in
-                poids_couche.iter().zip(biais_couche.iter())
-            {
+            for (neurone_poids, biais_neurone) in poids_couche.iter().zip(biais_couche.iter()) {
                 let mut somme = 0.0;
-                for (poids, activation) in
-                    neurone_poids.iter().zip(activation_precedente.iter())
-                {
+                for (poids, activation) in neurone_poids.iter().zip(activation_precedente.iter()) {
                     somme += poids * activation;
                 }
                 somme += biais_neurone;
@@ -130,9 +122,27 @@ impl PMC {
         (zs, activations)
     }
 
-    pub fn entrainer(&mut self, dataset: &Vec<(Vec<f64>, Vec<f64>)>, nbgeneration: usize) {
-        for _ in 0..nbgeneration {
-            let donnees = dataset.clone();
+    // Calcule juste la loss sans modifier les poids
+    fn calculer_loss(&self, dataset: &Vec<(Vec<f64>, Vec<f64>)>) -> f64 {
+        let total_error: f64 = dataset.iter().map(|(x, y)| {
+            let (_, activations) = self.forward(x);
+            let sortie = activations.last().unwrap();
+            sortie.iter().zip(y.iter())
+                .map(|(pred, attendu)| (pred - attendu).powi(2))
+                .sum::<f64>()
+        }).sum();
+
+        total_error / dataset.len() as f64
+    }
+
+    pub fn entrainer(
+        &mut self,
+        dataset_train: &Vec<(Vec<f64>, Vec<f64>)>,
+        dataset_test: &Vec<(Vec<f64>, Vec<f64>)>,
+        nbgeneration: usize,
+    ) {
+        for generation in 0..nbgeneration {
+            let mut total_error = 0.0;
 
             let mut gradient_poids = self.poids.clone();
             let mut gradient_biais = self.biais.clone();
@@ -144,7 +154,7 @@ impl PMC {
                 for val in gb.iter_mut() { *val = 0.0; }
             }
 
-            for (x, y) in &donnees {
+            for (x, y) in dataset_train {
                 let (zs, activations) = self.forward(x);
                 let mut deltas = Vec::new();
 
@@ -154,6 +164,12 @@ impl PMC {
                     .map(|(pred, attendu)| pred - attendu)
                     .collect();
                 deltas.push(delta_sortie);
+
+                let error: f64 = y_erreur_courante.iter()
+                    .zip(y.iter())
+                    .map(|(pred, attendu)| (pred - attendu).powi(2))
+                    .sum();
+                total_error += error;
 
                 for l in (1..self.poids.len()).rev() {
                     let z = &zs[l - 1];
@@ -184,7 +200,8 @@ impl PMC {
                 }
             }
 
-            let m = donnees.len() as f64;
+            let m = dataset_train.len() as f64;
+
             for l in 0..self.poids.len() {
                 for i in 0..self.poids[l].len() {
                     for j in 0..self.poids[l][i].len() {
@@ -193,6 +210,26 @@ impl PMC {
                     self.biais[l][i] -= self.txapprentissage * gradient_biais[l][i] / m;
                 }
             }
+
+
+            let train_loss = total_error / m;
+            if let Some(logger) = &mut self.train_logger {
+                logger.log_loss(generation, train_loss);
+            }
+
+            if !dataset_test.is_empty() {
+                let test_loss = self.calculer_loss(dataset_test);
+                if let Some(logger) = &mut self.test_logger {
+                    logger.log_loss(generation, test_loss);
+                }
+            }
+        }
+
+        if let Some(logger) = &mut self.train_logger {
+            logger.flush();
+        }
+        if let Some(logger) = &mut self.test_logger {
+            logger.flush();
         }
     }
 
@@ -207,5 +244,4 @@ impl PMC {
             TypeProbleme::Regression => sortie.clone(),
         }
     }
-
 }

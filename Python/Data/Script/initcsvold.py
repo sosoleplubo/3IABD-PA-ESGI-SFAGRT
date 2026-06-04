@@ -71,7 +71,7 @@ for page in range(1, TOTAL_PAGES + 1):
 
         movies.append(row)
 
-with open("../v1dataset.csv", "w", newline="", encoding="utf-8") as f:
+with open("../old/v1dataset.csv", "w", newline="", encoding="utf-8") as f:
     writer = csv.writer(f)
     writer.writerow([
         "Studio","Genre","Date","Budget","Durée",

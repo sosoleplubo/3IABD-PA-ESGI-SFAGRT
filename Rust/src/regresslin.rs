@@ -1,10 +1,6 @@
 use nalgebra::{DMatrix, DVector};
+use crate::utils::TypeProbleme;
 
-#[derive(Clone)]
-pub enum TypeProbleme {
-    Classification,
-    Regression,
-}
 
 pub struct RegressionLineaire {
     pub poids: Vec<f64>,
@@ -21,45 +17,62 @@ impl RegressionLineaire {
         }
     }
 
-    pub fn entrainer(
-        &mut self,
-        dataset: &Vec<(Vec<f64>, Vec<f64>)>,
-    ) {
+    pub fn entrainer(&mut self, dataset: &Vec<(Vec<f64>, Vec<f64>)>) {
+
         let nb_lignes = dataset.len();
+
         let nb_features = dataset[0].0.len();
 
         let mut x_data = Vec::with_capacity(nb_lignes * (nb_features + 1));
+
         let mut y_data = Vec::with_capacity(nb_lignes);
 
         for (x, y) in dataset {
+
             x_data.push(1.0); // biais
 
             for v in x {
+
                 x_data.push(*v);
+
             }
 
             y_data.push(y[0]);
+
         }
 
-        let x =
-            DMatrix::from_row_slice(nb_lignes, nb_features + 1, &x_data);
+        let x = DMatrix::from_row_slice(nb_lignes, nb_features + 1, &x_data);
 
-        let y =
-            DVector::from_row_slice(&y_data);
+        let y = DVector::from_row_slice(&y_data);
 
-        let svd = x.svd(true, true);
+        // X^T
 
-        let x_inverser = svd
-            .pseudo_inverse(1e-10)
-            .unwrap();
+        let xt = x.transpose();
 
-        let w = x_inverser * y;
+        // X^T X
+
+        let xtx = &xt * &x;
+
+        // inverse
+
+        let xtx_inv = xtx.try_inverse().expect("Matrix non inversible");
+
+        // X^T Y
+
+        let xty = &xt * &y;
+
+        // W
+
+        let w = xtx_inv * xty;
 
         self.biais = w[0];
 
         for i in 0..nb_features {
+
             self.poids[i] = w[i + 1];
+
         }
+
     }
 
     pub fn predire_brut(&self, x: &Vec<f64>) -> f64 {

@@ -1,31 +1,44 @@
 import requests
 import os
 import csv
+import random
 from dotenv import load_dotenv
 
 load_dotenv()
 API_KEY = os.getenv("TMDB_API_KEY")
 
+TARGET_MOVIES = 1000
+MAX_PAGE = 1000
 movies = []
+seen_ids = set()
 
-TOTAL_PAGES = 500
-
-for page in range(1, TOTAL_PAGES + 1):
-
-    print(f"Page {page}...")
-
-    discover = requests.get(
-        "https://api.themoviedb.org/3/discover/movie",
-        params={"api_key": API_KEY, "page": page}
+def fetch_page(page):
+    url = "https://api.themoviedb.org/3/discover/movie"
+    return requests.get(
+        url,
+        params={
+            "api_key": API_KEY,
+            "page": page,
+            "sort_by": "popularity.desc"
+        }
     ).json()
 
+while len(movies) < TARGET_MOVIES:
+
+    page = random.randint(1, MAX_PAGE)
+    print(f"Page random: {page}")
+
+    discover = fetch_page(page)
+
     if "results" not in discover:
-        print("Erreur API :", discover)
         continue
 
     for film in discover["results"]:
 
         movie_id = film["id"]
+
+        if movie_id in seen_ids:
+            continue
 
         details = requests.get(
             f"https://api.themoviedb.org/3/movie/{movie_id}",
@@ -41,7 +54,7 @@ for page in range(1, TOTAL_PAGES + 1):
         revenue = details.get("revenue", 0)
         runtime = details.get("runtime", 0)
 
-
+        # filtre important
         if not budget or not revenue or not runtime:
             continue
 
@@ -51,7 +64,6 @@ for page in range(1, TOTAL_PAGES + 1):
         )
 
         actors = ", ".join(a["name"] for a in credits.get("cast", [])[:3])
-
         studio = ", ".join(c["name"] for c in details.get("production_companies", []))
         genre = ", ".join(g["name"] for g in details.get("genres", []))
         countries = ", ".join(c["name"] for c in details.get("production_countries", []))
@@ -70,13 +82,18 @@ for page in range(1, TOTAL_PAGES + 1):
         ]
 
         movies.append(row)
+        seen_ids.add(movie_id)
 
-with open("../v1dataset.csv", "w", newline="", encoding="utf-8") as f:
+        if len(movies) >= TARGET_MOVIES:
+            break
+
+# export CSV
+with open("../dataset1000.csv", "w", newline="", encoding="utf-8") as f:
     writer = csv.writer(f)
     writer.writerow([
         "Studio","Genre","Date","Budget","Durée",
-        "Réalisateur","Noms","Acteurs","BoxOffice","Pays"
+        "Réalisateur","Titre","Acteurs","BoxOffice","Pays"
     ])
     writer.writerows(movies)
 
-print(f"{len(movies)} films ajoutés au dataset")
+print(f"OK → {len(movies)} films collectés")
